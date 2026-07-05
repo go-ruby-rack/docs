@@ -739,7 +739,7 @@ by pseudo-version (no <code>replace</code>), the equivalent Ruby workload over t
 </tr>
 <tr>
 <td><strong>Go</strong></td>
-<td>1.26.4 (<code>CGO_ENABLED=0</code>), library <code>github.com/go-ruby-rack/rack v0.0.0-20260704053028-640136bb67e7</code></td>
+<td>1.26.4 (<code>CGO_ENABLED=0</code>), library <code>github.com/go-ruby-rack/rack v0.0.0-20260705195519-3d6eb0d8d96b</code></td>
 </tr>
 <tr>
 <td><strong>MRI</strong></td>
@@ -777,10 +777,12 @@ estimated or cherry-picked.</p>
 </div>
 <h2 id="headline-pure-go-vs-mri-yjit">Headline: pure-Go vs MRI + YJIT<a class="headerlink" href="#headline-pure-go-vs-mri-yjit" title="Permanent link">&para;</a></h2>
 <p>Rack's compute surface is pure Ruby, so the pure-Go port is broadly far ahead of
-even the JIT. <strong>go-ruby-rack beats MRI + YJIT on 8 of the 9 ops.</strong> The lone
-exception is <code>escape_html</code>, where <code>Rack::Utils.escape_html</code> dispatches into a
-C-implemented core (<code>cgi/escape</code>) that YJIT keeps ~1.1× ahead of the pure-Go
-routine — which itself still matches plain MRI.</p>
+even the JIT. <strong>go-ruby-rack beats MRI + YJIT on all 9 ops.</strong> The closest race is
+<code>escape_html</code>, where <code>Rack::Utils.escape_html</code> dispatches into a C-implemented
+core (<code>cgi/escape</code>): a two-pass <code>strings.Replacer</code> used to lose to it, but the
+table-driven single-pass escaper (a 256-entry byte→entity lookup that
+bulk-copies verbatim runs and returns no-escape input allocation-free) now runs
+~1.5× ahead of even YJIT's C path.</p>
 <table>
 <thead>
 <tr>
@@ -793,57 +795,57 @@ routine — which itself still matches plain MRI.</p>
 <tbody>
 <tr>
 <td><code>escape</code></td>
-<td style="text-align: right;">250.6</td>
-<td style="text-align: right;">5146.0</td>
-<td style="text-align: right;"><strong>20.5× faster</strong></td>
+<td style="text-align: right;">245.7</td>
+<td style="text-align: right;">4999.2</td>
+<td style="text-align: right;"><strong>20.3× faster</strong></td>
 </tr>
 <tr>
 <td><code>unescape</code></td>
-<td style="text-align: right;">117.3</td>
-<td style="text-align: right;">5651.0</td>
-<td style="text-align: right;"><strong>48.2× faster</strong></td>
+<td style="text-align: right;">116.2</td>
+<td style="text-align: right;">5659.6</td>
+<td style="text-align: right;"><strong>48.7× faster</strong></td>
 </tr>
 <tr>
 <td><code>escape_html</code></td>
-<td style="text-align: right;">174.0</td>
-<td style="text-align: right;">154.0</td>
-<td style="text-align: right;">0.89× (YJIT 1.13× faster)</td>
+<td style="text-align: right;">104.8</td>
+<td style="text-align: right;">162.2</td>
+<td style="text-align: right;"><strong>1.55× faster</strong></td>
 </tr>
 <tr>
 <td><code>parse_query</code></td>
-<td style="text-align: right;">1761.0</td>
-<td style="text-align: right;">8775.0</td>
-<td style="text-align: right;"><strong>4.98× faster</strong></td>
+<td style="text-align: right;">1798.6</td>
+<td style="text-align: right;">8985.5</td>
+<td style="text-align: right;"><strong>5.00× faster</strong></td>
 </tr>
 <tr>
 <td><code>build_query</code></td>
-<td style="text-align: right;">780.6</td>
-<td style="text-align: right;">5434.5</td>
-<td style="text-align: right;"><strong>6.96× faster</strong></td>
+<td style="text-align: right;">779.9</td>
+<td style="text-align: right;">5386.5</td>
+<td style="text-align: right;"><strong>6.91× faster</strong></td>
 </tr>
 <tr>
 <td><code>parse_nested_query</code></td>
-<td style="text-align: right;">1716.7</td>
-<td style="text-align: right;">6747.5</td>
-<td style="text-align: right;"><strong>3.93× faster</strong></td>
+<td style="text-align: right;">1735.4</td>
+<td style="text-align: right;">7001.5</td>
+<td style="text-align: right;"><strong>4.03× faster</strong></td>
 </tr>
 <tr>
 <td><code>build_nested_query</code></td>
-<td style="text-align: right;">999.8</td>
-<td style="text-align: right;">7519.0</td>
-<td style="text-align: right;"><strong>7.52× faster</strong></td>
+<td style="text-align: right;">1029.4</td>
+<td style="text-align: right;">7337.5</td>
+<td style="text-align: right;"><strong>7.13× faster</strong></td>
 </tr>
 <tr>
 <td><code>request</code></td>
-<td style="text-align: right;">2282.7</td>
-<td style="text-align: right;">8886.5</td>
-<td style="text-align: right;"><strong>3.89× faster</strong></td>
+<td style="text-align: right;">2310.6</td>
+<td style="text-align: right;">8559.5</td>
+<td style="text-align: right;"><strong>3.70× faster</strong></td>
 </tr>
 <tr>
 <td><code>response</code></td>
-<td style="text-align: right;">859.4</td>
-<td style="text-align: right;">2569.5</td>
-<td style="text-align: right;"><strong>2.99× faster</strong></td>
+<td style="text-align: right;">854.8</td>
+<td style="text-align: right;">2585.5</td>
+<td style="text-align: right;"><strong>3.02× faster</strong></td>
 </tr>
 </tbody>
 </table>
@@ -866,28 +868,28 @@ multi-byte UTF-8).</p>
 <tbody>
 <tr>
 <td><strong>go-ruby (pure Go)</strong></td>
-<td style="text-align: right;">250.6</td>
+<td style="text-align: right;">245.7</td>
 <td style="text-align: right;">0.05×</td>
 </tr>
 <tr>
 <td>MRI</td>
-<td style="text-align: right;">5174.4</td>
+<td style="text-align: right;">5213.2</td>
 <td style="text-align: right;">1.00×</td>
 </tr>
 <tr>
 <td>MRI + YJIT</td>
-<td style="text-align: right;">5146.0</td>
-<td style="text-align: right;">0.99×</td>
+<td style="text-align: right;">4999.2</td>
+<td style="text-align: right;">0.96×</td>
 </tr>
 <tr>
 <td>JRuby</td>
-<td style="text-align: right;">2390.7</td>
-<td style="text-align: right;">0.46×</td>
+<td style="text-align: right;">2231.5</td>
+<td style="text-align: right;">0.43×</td>
 </tr>
 <tr>
 <td>TruffleRuby</td>
-<td style="text-align: right;">3868.8</td>
-<td style="text-align: right;">0.75×</td>
+<td style="text-align: right;">3844.0</td>
+<td style="text-align: right;">0.74×</td>
 </tr>
 </tbody>
 </table>
@@ -904,34 +906,35 @@ multi-byte UTF-8).</p>
 <tbody>
 <tr>
 <td><strong>go-ruby (pure Go)</strong></td>
-<td style="text-align: right;">117.3</td>
+<td style="text-align: right;">116.2</td>
 <td style="text-align: right;">0.02×</td>
 </tr>
 <tr>
 <td>MRI</td>
-<td style="text-align: right;">5563.0</td>
+<td style="text-align: right;">5583.4</td>
 <td style="text-align: right;">1.00×</td>
 </tr>
 <tr>
 <td>MRI + YJIT</td>
-<td style="text-align: right;">5651.0</td>
-<td style="text-align: right;">1.02×</td>
+<td style="text-align: right;">5659.6</td>
+<td style="text-align: right;">1.01×</td>
 </tr>
 <tr>
 <td>JRuby</td>
-<td style="text-align: right;">3491.8</td>
-<td style="text-align: right;">0.63×</td>
+<td style="text-align: right;">3267.4</td>
+<td style="text-align: right;">0.59×</td>
 </tr>
 <tr>
 <td>TruffleRuby</td>
-<td style="text-align: right;">4020.3</td>
-<td style="text-align: right;">0.72×</td>
+<td style="text-align: right;">3983.9</td>
+<td style="text-align: right;">0.71×</td>
 </tr>
 </tbody>
 </table>
 <h4 id="escape_html">escape_html<a class="headerlink" href="#escape_html" title="Permanent link">&para;</a></h4>
 <p><code>Rack::Utils.escape_html</code> — the five-character HTML-entity escape (<code>&amp;</code>, <code>&lt;</code>, <code>&gt;</code>,
-<code>"</code>, <code>'</code>). MRI/YJIT dispatch to a C core here, so this is the closest race.</p>
+<code>"</code>, <code>'</code>). MRI/YJIT dispatch to a C core (<code>cgi/escape</code>) here, so this is the
+closest race — and the pure-Go table-driven escaper now wins it outright.</p>
 <table>
 <thead>
 <tr>
@@ -943,28 +946,28 @@ multi-byte UTF-8).</p>
 <tbody>
 <tr>
 <td><strong>go-ruby (pure Go)</strong></td>
-<td style="text-align: right;">174.0</td>
-<td style="text-align: right;">0.91×</td>
+<td style="text-align: right;">104.8</td>
+<td style="text-align: right;">0.55×</td>
 </tr>
 <tr>
 <td>MRI</td>
-<td style="text-align: right;">191.2</td>
+<td style="text-align: right;">191.8</td>
 <td style="text-align: right;">1.00×</td>
 </tr>
 <tr>
 <td>MRI + YJIT</td>
-<td style="text-align: right;">154.0</td>
-<td style="text-align: right;">0.81×</td>
+<td style="text-align: right;">162.2</td>
+<td style="text-align: right;">0.85×</td>
 </tr>
 <tr>
 <td>JRuby</td>
-<td style="text-align: right;">205.4</td>
-<td style="text-align: right;">1.07×</td>
+<td style="text-align: right;">304.4</td>
+<td style="text-align: right;">1.59×</td>
 </tr>
 <tr>
 <td>TruffleRuby</td>
-<td style="text-align: right;">1970.6</td>
-<td style="text-align: right;">10.31×</td>
+<td style="text-align: right;">2065.3</td>
+<td style="text-align: right;">10.77×</td>
 </tr>
 </tbody>
 </table>
@@ -982,28 +985,28 @@ values, a valueless key) into a <code>key → value(s)</code> map.</p>
 <tbody>
 <tr>
 <td><strong>go-ruby (pure Go)</strong></td>
-<td style="text-align: right;">1761.0</td>
+<td style="text-align: right;">1798.6</td>
 <td style="text-align: right;">0.17×</td>
 </tr>
 <tr>
 <td>MRI</td>
-<td style="text-align: right;">10474.5</td>
+<td style="text-align: right;">10550.5</td>
 <td style="text-align: right;">1.00×</td>
 </tr>
 <tr>
 <td>MRI + YJIT</td>
-<td style="text-align: right;">8775.0</td>
-<td style="text-align: right;">0.84×</td>
+<td style="text-align: right;">8985.5</td>
+<td style="text-align: right;">0.85×</td>
 </tr>
 <tr>
 <td>JRuby</td>
-<td style="text-align: right;">4429.6</td>
-<td style="text-align: right;">0.42×</td>
+<td style="text-align: right;">4354.3</td>
+<td style="text-align: right;">0.41×</td>
 </tr>
 <tr>
 <td>TruffleRuby</td>
-<td style="text-align: right;">14402.7</td>
-<td style="text-align: right;">1.38×</td>
+<td style="text-align: right;">13347.3</td>
+<td style="text-align: right;">1.27×</td>
 </tr>
 </tbody>
 </table>
@@ -1020,27 +1023,27 @@ values, a valueless key) into a <code>key → value(s)</code> map.</p>
 <tbody>
 <tr>
 <td><strong>go-ruby (pure Go)</strong></td>
-<td style="text-align: right;">780.6</td>
-<td style="text-align: right;">0.11×</td>
+<td style="text-align: right;">779.9</td>
+<td style="text-align: right;">0.12×</td>
 </tr>
 <tr>
 <td>MRI</td>
-<td style="text-align: right;">6895.5</td>
+<td style="text-align: right;">6628.0</td>
 <td style="text-align: right;">1.00×</td>
 </tr>
 <tr>
 <td>MRI + YJIT</td>
-<td style="text-align: right;">5434.5</td>
-<td style="text-align: right;">0.79×</td>
+<td style="text-align: right;">5386.5</td>
+<td style="text-align: right;">0.81×</td>
 </tr>
 <tr>
 <td>JRuby</td>
-<td style="text-align: right;">2551.9</td>
+<td style="text-align: right;">2440.7</td>
 <td style="text-align: right;">0.37×</td>
 </tr>
 <tr>
 <td>TruffleRuby</td>
-<td style="text-align: right;">6574.3</td>
+<td style="text-align: right;">6311.9</td>
 <td style="text-align: right;">0.95×</td>
 </tr>
 </tbody>
@@ -1059,28 +1062,28 @@ values, a valueless key) into a <code>key → value(s)</code> map.</p>
 <tbody>
 <tr>
 <td><strong>go-ruby (pure Go)</strong></td>
-<td style="text-align: right;">1716.7</td>
+<td style="text-align: right;">1735.4</td>
 <td style="text-align: right;">0.19×</td>
 </tr>
 <tr>
 <td>MRI</td>
-<td style="text-align: right;">9136.5</td>
+<td style="text-align: right;">9019.5</td>
 <td style="text-align: right;">1.00×</td>
 </tr>
 <tr>
 <td>MRI + YJIT</td>
-<td style="text-align: right;">6747.5</td>
-<td style="text-align: right;">0.74×</td>
+<td style="text-align: right;">7001.5</td>
+<td style="text-align: right;">0.78×</td>
 </tr>
 <tr>
 <td>JRuby</td>
-<td style="text-align: right;">3450.2</td>
+<td style="text-align: right;">3418.7</td>
 <td style="text-align: right;">0.38×</td>
 </tr>
 <tr>
 <td>TruffleRuby</td>
-<td style="text-align: right;">6079.9</td>
-<td style="text-align: right;">0.67×</td>
+<td style="text-align: right;">5787.0</td>
+<td style="text-align: right;">0.64×</td>
 </tr>
 </tbody>
 </table>
@@ -1097,28 +1100,28 @@ values, a valueless key) into a <code>key → value(s)</code> map.</p>
 <tbody>
 <tr>
 <td><strong>go-ruby (pure Go)</strong></td>
-<td style="text-align: right;">999.8</td>
+<td style="text-align: right;">1029.4</td>
 <td style="text-align: right;">0.11×</td>
 </tr>
 <tr>
 <td>MRI</td>
-<td style="text-align: right;">9097.0</td>
+<td style="text-align: right;">9012.0</td>
 <td style="text-align: right;">1.00×</td>
 </tr>
 <tr>
 <td>MRI + YJIT</td>
-<td style="text-align: right;">7519.0</td>
-<td style="text-align: right;">0.83×</td>
+<td style="text-align: right;">7337.5</td>
+<td style="text-align: right;">0.81×</td>
 </tr>
 <tr>
 <td>JRuby</td>
-<td style="text-align: right;">3378.5</td>
-<td style="text-align: right;">0.37×</td>
+<td style="text-align: right;">3417.9</td>
+<td style="text-align: right;">0.38×</td>
 </tr>
 <tr>
 <td>TruffleRuby</td>
-<td style="text-align: right;">8363.5</td>
-<td style="text-align: right;">0.92×</td>
+<td style="text-align: right;">7747.8</td>
+<td style="text-align: right;">0.86×</td>
 </tr>
 </tbody>
 </table>
@@ -1137,28 +1140,28 @@ values, a valueless key) into a <code>key → value(s)</code> map.</p>
 <tbody>
 <tr>
 <td><strong>go-ruby (pure Go)</strong></td>
-<td style="text-align: right;">2282.7</td>
+<td style="text-align: right;">2310.6</td>
 <td style="text-align: right;">0.17×</td>
 </tr>
 <tr>
 <td>MRI</td>
-<td style="text-align: right;">13539.0</td>
+<td style="text-align: right;">13675.0</td>
 <td style="text-align: right;">1.00×</td>
 </tr>
 <tr>
 <td>MRI + YJIT</td>
-<td style="text-align: right;">8886.5</td>
-<td style="text-align: right;">0.66×</td>
+<td style="text-align: right;">8559.5</td>
+<td style="text-align: right;">0.63×</td>
 </tr>
 <tr>
 <td>JRuby</td>
-<td style="text-align: right;">6765.8</td>
-<td style="text-align: right;">0.50×</td>
+<td style="text-align: right;">6967.3</td>
+<td style="text-align: right;">0.51×</td>
 </tr>
 <tr>
 <td>TruffleRuby</td>
-<td style="text-align: right;">11296.8</td>
-<td style="text-align: right;">0.83×</td>
+<td style="text-align: right;">10863.8</td>
+<td style="text-align: right;">0.79×</td>
 </tr>
 </tbody>
 </table>
@@ -1176,28 +1179,28 @@ values, a valueless key) into a <code>key → value(s)</code> map.</p>
 <tbody>
 <tr>
 <td><strong>go-ruby (pure Go)</strong></td>
-<td style="text-align: right;">859.4</td>
+<td style="text-align: right;">854.8</td>
 <td style="text-align: right;">0.21×</td>
 </tr>
 <tr>
 <td>MRI</td>
-<td style="text-align: right;">4126.0</td>
+<td style="text-align: right;">4083.5</td>
 <td style="text-align: right;">1.00×</td>
 </tr>
 <tr>
 <td>MRI + YJIT</td>
-<td style="text-align: right;">2569.5</td>
-<td style="text-align: right;">0.62×</td>
+<td style="text-align: right;">2585.5</td>
+<td style="text-align: right;">0.63×</td>
 </tr>
 <tr>
 <td>JRuby</td>
-<td style="text-align: right;">2007.2</td>
-<td style="text-align: right;">0.49×</td>
+<td style="text-align: right;">2024.5</td>
+<td style="text-align: right;">0.50×</td>
 </tr>
 <tr>
 <td>TruffleRuby</td>
-<td style="text-align: right;">4123.0</td>
-<td style="text-align: right;">1.00×</td>
+<td style="text-align: right;">4284.7</td>
+<td style="text-align: right;">1.05×</td>
 </tr>
 </tbody>
 </table>
