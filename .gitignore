@@ -1,2 +1,5 @@
 /site/
 __pycache__/
+.venv/
+# Compiled Go benchmark driver (built on demand by benchmarks/run.sh).
+benchmarks/go/bench
