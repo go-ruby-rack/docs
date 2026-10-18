@@ -4,8 +4,7 @@
 
 The documentation site for [go-ruby-rack](https://github.com/go-ruby-rack) —
 a pure-Go (no cgo) reimplementation of the deterministic core of Ruby's Rack.
-Built with [MkDocs Material](https://squidfunk.github.io/mkdocs-material/) and
-versioned with [mike](https://github.com/jimporter/mike), served at
+Built with [Hugo](https://gohugo.io/) and this fleet's [Hextra fork](https://github.com/tannevaled/hextra) — upstream Hextra plus the opt-in features the fleet's sites use, served at
 <https://go-ruby-rack.github.io/docs/>.
 
 `.github/workflows/docs.yml` builds the site with mike and publishes it to the
@@ -14,8 +13,8 @@ versioned with [mike](https://github.com/jimporter/mike), served at
 ## Local preview
 
 ```bash
-pip install -r requirements.txt
-mkdocs serve      # http://127.0.0.1:8000
+git submodule update --init --recursive   # themes/hextra, pinned at a release tag
+hugo server                               # http://localhost:1313
 ```
 
 ## License

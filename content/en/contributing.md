@@ -1,10 +1,15 @@
-# Contributing
+---
+title: "Contributing"
+weight: 60
+---
+
+# Contributing {#contributing}
 
 Contributions are welcome. `go-ruby-rack/rack` is built to a small set of
 non-negotiable rules — they are what keep it pure-Go, correct, and
 MRI-compatible. Please read these before opening a pull request.
 
-## Hard rules
+## Hard rules {#hard-rules}
 
 - **Build from source — no vendoring.** Everything compiles from source. Being
   able to compile from source is a guarantee of independence.
@@ -23,7 +28,7 @@ MRI-compatible. Please read these before opening a pull request.
   deterministic compute core extracted from rbgo's internals. Anything that needs
   a live Ruby binding or an HTTP server belongs in the consumer, not here.
 
-## Workflow
+## Workflow {#workflow}
 
 1. Pick or open an issue describing the change.
 2. Work test-first: add the differential / unit tests, then make them pass.
@@ -37,11 +42,11 @@ MRI-compatible. Please read these before opening a pull request.
 
 4. Open a PR in English, referencing the issue.
 
-## Where things live
+## Where things live {#where-things-live}
 
 The library is in
 [`github.com/go-ruby-rack/rack`](https://github.com/go-ruby-rack/rack). This
 documentation site is in
 [`github.com/go-ruby-rack/docs`](https://github.com/go-ruby-rack/docs). Start
-from the [Usage & API](api.md) page and the [Roadmap](roadmap.md) to find the
+from the [Usage & API]({{< relref "api.md" >}}) page and the [Roadmap]({{< relref "roadmap.md" >}}) to find the
 right place for your change.

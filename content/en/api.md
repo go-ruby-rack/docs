@@ -1,4 +1,9 @@
-# Usage & API
+---
+title: "Usage & API"
+weight: 30
+---
+
+# Usage & API {#usage-api}
 
 The public API lives at the module root (`github.com/go-ruby-rack/rack`). It is
 **Ruby-shaped but Go-idiomatic**: the names mirror the `rack` gem's
@@ -7,17 +12,20 @@ The public API lives at the module root (`github.com/go-ruby-rack/rack`). It is
 conventions — value types, explicit errors, an explicit body seam, no global
 state.
 
-!!! success "Status: implemented"
-    The library is built and importable as `github.com/go-ruby-rack/rack`, bound
-    into `rbgo` as the Rack backend; see [Roadmap](roadmap.md).
+{{< callout type="info" >}}
+**Status: implemented**
 
-## Install
+The library is built and importable as `github.com/go-ruby-rack/rack`, bound
+into `rbgo` as the Rack backend; see [Roadmap]({{< relref "roadmap.md" >}}).
+{{< /callout >}}
+
+## Install {#install}
 
 ```sh
 go get github.com/go-ruby-rack/rack
 ```
 
-## Worked example
+## Worked example {#worked-example}
 
 ```go
 package main
@@ -55,7 +63,7 @@ func main() {
 }
 ```
 
-## Utils — query, escaping, status, negotiation, cookies
+## Utils — query, escaping, status, negotiation, cookies {#utils-query-escaping-status-negotiation-cookies}
 
 ```go
 // query parsing / building
@@ -99,7 +107,7 @@ the `ParameterTypeError` / `ParamsTooDeepError` conflicts — and `BuildQuery` /
 `BuildNestedQuery` invert it. Pass `rack.DefaultParamDepthLimit` for the standard
 depth guard.
 
-## Request over an Env
+## Request over an Env {#request-over-an-env}
 
 ```go
 func NewRequest(env Env) *Request
@@ -135,7 +143,7 @@ func (r *Request) SetHeader(name, value string); func (r *Request) DeleteHeader(
 `Request.POST` / `Request.Params` read the body only for form-data content types,
 parse it with `ParseNestedQuery`, and memoise into the env exactly like the gem.
 
-## Response & the SPEC tuple
+## Response & the SPEC tuple {#response-the-spec-tuple}
 
 ```go
 func NewResponse(body []string, status int, headers *Headers) *Response
@@ -157,7 +165,7 @@ func (r *Response) ClientError() bool; func (r *Response) ServerError() bool
 func (r *Response) NotFound() bool // ... OK/Created/BadRequest/Forbidden/… helpers
 ```
 
-## Value model — Headers & Params
+## Value model — Headers & Params {#value-model-headers-params}
 
 Parsed parameters and cookies are built from a small, fixed set of Go types — the
 analogue of the Ruby `Hash`/`Array`/`String`/`nil` graph the gem returns:
@@ -188,7 +196,7 @@ func (h *Headers) Keys() []string; func (h *Headers) Each(fn func(key, value str
 `Headers` mirrors `Rack::Headers`: insertion-ordered, keys down-cased on the way
 in, matching Rack 3.x's lower-case-header rule.
 
-## The body/input seam
+## The body/input seam {#the-bodyinput-seam}
 
 Reading the request body is the one place this library defers to the host. A
 `Request` reads `env["rack.input"]` through the small `Input` interface:
@@ -206,7 +214,7 @@ has, so the package stays free of any network or runtime dependency. The HTTP
 server itself — `Rack::Handler`, the accept loop, TLS — is out of scope by
 design.
 
-## MRI conformance
+## MRI conformance {#mri-conformance}
 
 A **differential oracle** runs every escaping, query-parse, status, cookie,
 media-type, byte-range and `Response#finish` case through both the system `ruby`
