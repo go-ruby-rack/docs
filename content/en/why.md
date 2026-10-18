@@ -1,4 +1,9 @@
-# Why pure Go
+---
+title: "Why pure Go"
+weight: 20
+---
+
+# Why pure Go {#why-pure-go}
 
 `go-ruby-rack/rack` reimplements the core of Ruby's `Rack` in **pure Go, with
 cgo disabled**. The slice of Rack it covers is **deterministic and
@@ -7,7 +12,7 @@ those inputs — no live binding, no evaluation of arbitrary Ruby, no network.
 That is exactly the part that can — and should — live as a standalone Go library,
 separate from both the interpreter and the HTTP server.
 
-## What is in scope — and what isn't
+## What is in scope — and what isn't {#what-is-in-scope-and-what-isnt}
 
 Rack is two things bolted together: a **value/compute layer** (the SPEC env
 hash, parameter and cookie parsing, escaping, status-code mapping, the
@@ -20,10 +25,10 @@ socket accept loop, TLS). Only the first is deterministic.
   the `rack` gem.
 - **Out of scope — the server.** Accepting sockets, TLS and `Rack::Handler` are
   the **host's** job. Reading the request body is the one deferred point, behind
-  a small [`Input`](api.md#the-bodyinput-seam) seam the host fills — so this
+  a small [`Input`]({{< relref "api.md#the-bodyinput-seam" >}}) seam the host fills — so this
   library never touches the network.
 
-## Extracted from rbgo, reusable by anyone
+## Extracted from rbgo, reusable by anyone {#extracted-from-rbgo-reusable-by-anyone}
 
 This library began life inside
 [go-embedded-ruby](https://github.com/go-embedded-ruby/ruby)'s `rbgo`, backing
@@ -40,7 +45,7 @@ that:
 - the behaviour is pinned by a **differential oracle** against the system `ruby`
   with the `rack` gem, independent of any one consumer.
 
-## Why pure Go matters here
+## Why pure Go matters here {#why-pure-go-matters-here}
 
 Because the library is CGO-free, it:
 
@@ -51,5 +56,5 @@ Because the library is CGO-free, it:
   `PATH`, while the cross-arch and Windows lanes (where `ruby` is absent) still
   validate the library itself.
 
-See [Usage & API](api.md) for the surface and [Roadmap](roadmap.md) for what is
+See [Usage & API]({{< relref "api.md" >}}) for the surface and [Roadmap]({{< relref "roadmap.md" >}}) for what is
 in scope.

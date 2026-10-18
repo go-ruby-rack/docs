@@ -1,4 +1,9 @@
-# Performance
+---
+title: "Performance"
+weight: 50
+---
+
+# Performance {#performance}
 
 `go-ruby-rack/rack` is the pure-Go library that
 [`rbgo`](https://github.com/go-embedded-ruby/ruby) binds for Ruby's `rack`. This
@@ -12,7 +17,7 @@ in this repository — a self-contained Go driver that pins the published librar
 by pseudo-version (no `replace`), the equivalent Ruby workload over the real
 `rack` gem, and a `run.sh` that gates on byte-identical parity before timing.
 
-## Setup
+## Setup {#setup}
 
 | | |
 | --- | --- |
@@ -32,15 +37,18 @@ output is checked **byte-identical to MRI** before any timing is recorded — th
 structural ops (`parse_*`, `request`, `response`) through a length-prefixed
 canonical serialiser shared by the Go and Ruby drivers.
 
-!!! note "Reading the numbers"
-    JRuby and TruffleRuby are timed **cold / single-shot** (one short-lived
-    process, best of 25 passes) and can understate their true steady-state peak;
-    their columns are indicative, not their JIT ceiling. Sub-microsecond rows
-    carry the most relative noise and should be read as order-of-magnitude. Every
-    number below is a real measured value from the dated run above — nothing
-    estimated or cherry-picked.
+{{< callout type="info" >}}
+**Reading the numbers**
 
-## Headline: pure-Go vs MRI + YJIT
+JRuby and TruffleRuby are timed **cold / single-shot** (one short-lived
+process, best of 25 passes) and can understate their true steady-state peak;
+their columns are indicative, not their JIT ceiling. Sub-microsecond rows
+carry the most relative noise and should be read as order-of-magnitude. Every
+number below is a real measured value from the dated run above — nothing
+estimated or cherry-picked.
+{{< /callout >}}
+
+## Headline: pure-Go vs MRI + YJIT {#headline-pure-go-vs-mri-yjit}
 
 Rack's compute surface is pure Ruby, so the pure-Go port is broadly far ahead of
 even the JIT. **go-ruby-rack beats MRI + YJIT on all 9 ops.** The closest race is
@@ -62,14 +70,14 @@ bulk-copies verbatim runs and returns no-escape input allocation-free) now runs
 | `request` | 2310.6 | 8559.5 | **3.70× faster** |
 | `response` | 854.8 | 2585.5 | **3.02× faster** |
 
-## Full results
+## Full results {#full-results}
 
 Nine representative primitives from Rack's pure-compute surface, over fixed
 inputs present in **both** go-ruby-rack and `rack` 3.2.6. (`unescape_html` is
 omitted — it is not part of `Rack::Utils` 3.2.6.) `vs MRI` is the ratio to plain
 MRI (lower is faster).
 
-#### escape
+#### escape {#escape}
 
 `Rack::Utils.escape` — form-encode a realistic value (spaces, reserved bytes,
 multi-byte UTF-8).
@@ -82,7 +90,7 @@ multi-byte UTF-8).
 | JRuby | 2231.5 | 0.43× |
 | TruffleRuby | 3844.0 | 0.74× |
 
-#### unescape
+#### unescape {#unescape}
 
 `Rack::Utils.unescape` — the inverse of `escape`.
 
@@ -94,7 +102,7 @@ multi-byte UTF-8).
 | JRuby | 3267.4 | 0.59× |
 | TruffleRuby | 3983.9 | 0.71× |
 
-#### escape_html
+#### escape_html {#escape_html}
 
 `Rack::Utils.escape_html` — the five-character HTML-entity escape (`&`, `<`, `>`,
 `"`, `'`). MRI/YJIT dispatch to a C core (`cgi/escape`) here, so this is the
@@ -108,7 +116,7 @@ closest race — and the pure-Go table-driven escaper now wins it outright.
 | JRuby | 304.4 | 1.59× |
 | TruffleRuby | 2065.3 | 10.77× |
 
-#### parse_query
+#### parse_query {#parse_query}
 
 `Rack::Utils.parse_query` — a flat query string (repeated array keys, `%`/`+`
 values, a valueless key) into a `key → value(s)` map.
@@ -121,7 +129,7 @@ values, a valueless key) into a `key → value(s)` map.
 | JRuby | 4354.3 | 0.41× |
 | TruffleRuby | 13347.3 | 1.27× |
 
-#### build_query
+#### build_query {#build_query}
 
 `Rack::Utils.build_query` — the inverse of `parse_query`.
 
@@ -133,7 +141,7 @@ values, a valueless key) into a `key → value(s)` map.
 | JRuby | 2440.7 | 0.37× |
 | TruffleRuby | 6311.9 | 0.95× |
 
-#### parse_nested_query
+#### parse_nested_query {#parse_nested_query}
 
 `Rack::Utils.parse_nested_query` — a `foo[bar][]=…` nested body into structural
 `Hash`/`Array`/`String`/`nil`.
@@ -146,7 +154,7 @@ values, a valueless key) into a `key → value(s)` map.
 | JRuby | 3418.7 | 0.38× |
 | TruffleRuby | 5787.0 | 0.64× |
 
-#### build_nested_query
+#### build_nested_query {#build_nested_query}
 
 `Rack::Utils.build_nested_query` — the inverse of `parse_nested_query`.
 
@@ -158,7 +166,7 @@ values, a valueless key) into a `key → value(s)` map.
 | JRuby | 3417.9 | 0.38× |
 | TruffleRuby | 7747.8 | 0.86× |
 
-#### request
+#### request {#request}
 
 Build a `Rack::Request` from a fixed env `Hash` and read a fixed set of accessors
 (`request_method`, `host`, `port`, `scheme`, `ssl?`, `media_type`, `xhr?`,
@@ -172,7 +180,7 @@ Build a `Rack::Request` from a fixed env `Hash` and read a fixed set of accessor
 | JRuby | 6967.3 | 0.51× |
 | TruffleRuby | 10863.8 | 0.79× |
 
-#### response
+#### response {#response}
 
 Build a `Rack::Response`, `write` a body, and `finish` it into the SPEC
 `[status, headers, body]` tuple (content-length filled in).
@@ -185,7 +193,7 @@ Build a `Rack::Response`, `write` a body, and `finish` it into the SPEC
 | JRuby | 2024.5 | 0.50× |
 | TruffleRuby | 4284.7 | 1.05× |
 
-## Reproduce
+## Reproduce {#reproduce}
 
 ```sh
 bash benchmarks/run.sh

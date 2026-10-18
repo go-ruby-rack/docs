@@ -1,4 +1,9 @@
-# Roadmap
+---
+title: "Roadmap"
+weight: 40
+---
+
+# Roadmap {#roadmap}
 
 `go-ruby-rack/rack` is grown **test-first**, each capability differential-tested
 against the `rack` gem rather than built in isolation. The deterministic,
@@ -16,13 +21,13 @@ rbgo's internals is **complete**.
 | Body/Input seam | The single `Input` interface through which the host supplies the request body, memoised into the env like the gem. | **Done** |
 | Differential oracle & coverage | Escape, query, status, cookie, media-type, byte-range and `Response#finish` checked byte-for-byte against `ruby` + the `rack` gem; 100% coverage, green across 6 arches and 3 OSes. | **Done** |
 
-## Documented out-of-scope boundaries
+## Documented out-of-scope boundaries {#documented-out-of-scope-boundaries}
 
 These are **deliberate**, recorded so the module's surface is unambiguous:
 
 - **No HTTP server.** `Rack::Handler`, the socket accept loop and TLS are the
   **host's** job. This library never touches the network; the request body comes
-  in through the one explicit [`Input`](api.md#the-bodyinput-seam) seam.
+  in through the one explicit [`Input`]({{< relref "api.md#the-bodyinput-seam" >}}) seam.
 - **No interpreter.** The library implements the deterministic compute; it never
   runs arbitrary Ruby (`Rack::Builder` DSL, middleware `call` chains). Anything
   that needs a live binding is the consumer's job — that is why `rbgo` binds this
@@ -32,5 +37,5 @@ These are **deliberate**, recorded so the module's surface is unambiguous:
 - **Standalone & reusable.** The module has no dependency on the Ruby runtime;
   the dependency runs the other way.
 
-See [Usage & API](api.md) for the surface and [Why pure Go](why.md) for the
+See [Usage & API]({{< relref "api.md" >}}) for the surface and [Why pure Go]({{< relref "why.md" >}}) for the
 deterministic/interpreter split.
